@@ -1,0 +1,50 @@
+#importing packages
+import pandas as pd
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report,confusion_matrix,accuracy_score
+from sklearn.tree import export_graphviz
+import sklearn.externals
+from six import StringIO
+from IPython.display import Image
+import pydotplus
+
+#importing dataset
+pima_data=open("pima-indians-diabetes.csv","r")
+#label columns
+col_names=['pregnant','glucose','bp','skin','insulin','bmi','pedigree','age','label']
+
+pima_data=pd.read_csv(pima_data,header=None,names=col_names)
+pima_data.head()
+feature_cols=['pregnant','glucose','bp','skin','insulin','bmi','pedigree']
+
+#split the dataset into features and target variable
+X=pima_data[feature_cols]
+y=pima_data.label
+
+#spliting the data into train and test
+X_train,X_test,y_train,y_test=train_test_split(X,y,test_size=.2,random_state=1)
+
+#train the model with the help of DecisionTreeClassifier
+clf=DecisionTreeClassifier()
+clf=clf.fit(X_train,y_train)
+
+#make prediction
+y_pred=clf.predict(X_test)
+
+#get and display accuracy score, confusion matrix and classification report
+result=confusion_matrix(y_test,y_pred)
+print("Confusion Matrix\n")
+print(result)
+print("Classification Report\n")
+result1=classification_report(y_test,y_pred)
+print(result1)
+result2=accuracy_score(y_test,y_pred)
+print("Accuracy Score: ",result2)
+
+#visualize the decision tree
+dot_data = StringIO()
+export_graphviz(clf, out_file=dot_data,filled=True, rounded=True,special_characters=True,feature_names = feature_cols,class_names=['0','1'])
+graph = pydotplus.graph_from_dot_data(dot_data.getvalue())
+graph.write_png('Pima_diabetes_Tree.png')
+Image(graph.create_png())
